@@ -115,7 +115,7 @@ export default async function BlogHome() {
           <div className="max-w-3xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 
                          bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              PaisaTools Blog
+              Paisa Blogs
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
               Expert guides on taxes, investments, and financial planning
