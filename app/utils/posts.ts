@@ -2,7 +2,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
-import { cache } from 'react'; // <-- 1. IMPORT React's cache
+import { cache } from 'react';
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
@@ -17,47 +17,87 @@ export type FullPostData = PostMetadata & {
   content: string;
 };
 
-export async function getSortedPostsData(): Promise<PostMetadata[]> {
-  const fileNames = await fs.readdir(postsDirectory); 
-
-  const allPostsData = await Promise.all(
-    fileNames.map(async (fileName) => {
-      const slug = fileName.replace(/\.mdx$/, '');
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = await fs.readFile(fullPath, 'utf8');
-      const matterResult = matter(fileContents);
-
-      return {
-        slug,
-        title: matterResult.data.title,
-        date: matterResult.data.date,
-        description: matterResult.data.description,
-      } as PostMetadata;
-    })
-  );
-
-  // Sort posts by date
-  return allPostsData.sort((a, b) => {
-    if (a.date < b.date) {
-      return 1;
-    } else {
-      return -1;
-    }
-  });
+// Helper function to validate and format date
+function validateAndFormatDate(dateString: string): string {
+  if (!dateString) {
+    console.warn('Missing date. Using current date.');
+    return new Date().toISOString().split('T')[0];
+  }
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    console.warn(`Invalid date found: ${dateString}. Using current date.`);
+    return new Date().toISOString().split('T')[0];
+  }
+  
+  return date.toISOString().split('T')[0];
 }
 
-//      2. WRAP getPostData in cache()     
+export async function getSortedPostsData(): Promise<PostMetadata[]> {
+  try {
+    const fileNames = await fs.readdir(postsDirectory); 
+
+    const allPostsData = await Promise.all(
+      fileNames.map(async (fileName) => {
+        try {
+          const slug = fileName.replace(/\.mdx$/, '') .replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          const fullPath = path.join(postsDirectory, fileName);
+          const fileContents = await fs.readFile(fullPath, 'utf8');
+          const matterResult = matter(fileContents);
+
+          // Validate and format the date
+          const validatedDate = validateAndFormatDate(matterResult.data.date);
+
+          return {
+            slug,
+            title: matterResult.data.title || `${slug}`,
+            date: validatedDate,
+            description: matterResult.data.description || `Read our article about ${slug.replace(/-/g, ' ')}`,
+          } as PostMetadata;
+        } catch (error) {
+          console.error(`Error processing file ${fileName}:`, error);
+          // Return a fallback post object
+          return {
+            slug: fileName.replace(/\.mdx$/, ''),
+            title: `${fileName.replace(/\.mdx$/, '')}`,
+            date: new Date().toISOString().split('T')[0],
+            description: 'This post is currently unavailable.',
+          };
+        }
+      })
+    );
+
+    // Filter out any null values and sort posts by date
+    const validPosts = allPostsData.filter(post => post !== null);
+    
+    return validPosts.sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  } catch (error) {
+    console.error('Error reading posts directory:', error);
+    return [];
+  }
+}
+
 export const getPostData = cache(async (slug: string): Promise<FullPostData> => {
-  const fullPath = path.join(postsDirectory, `${slug}.mdx`);
-  const fileContents = await fs.readFile(fullPath, 'utf8'); 
+  try {
+    const fullPath = path.join(postsDirectory, `${slug}.mdx`);
+    const fileContents = await fs.readFile(fullPath, 'utf8'); 
 
-  const matterResult = matter(fileContents);
+    const matterResult = matter(fileContents);
 
-  return {
-    slug,
-    content: matterResult.content,
-    title: matterResult.data.title,
-    date: matterResult.data.date,
-    description: matterResult.data.description,
-  } as FullPostData;
+    // Validate and format the date
+    const validatedDate = validateAndFormatDate(matterResult.data.date);
+
+    return {
+      slug,
+      content: matterResult.content,
+      title: matterResult.data.title || `${slug}`,
+      date: validatedDate,
+      description: matterResult.data.description || `Read our article about ${slug.replace(/-/g, ' ')}`,
+    } as FullPostData;
+  } catch (error) {
+    console.error(`Error loading post ${slug}:`, error);
+    throw new Error(`Post ${slug} not found`);
+  }
 });
