@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { useMDXComponents } from '../../../mdx-components'; 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 interface PostPageProps {
   params: Promise<{
@@ -49,11 +50,38 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound(); 
   }
 
+  let formattedDate = 'Invalid Date';
+  try {
+    const date = new Date(post.date);
+    if (!isNaN(date.getTime())) {
+      formattedDate = date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  } catch (error) {
+    console.warn(`Invalid date for post ${post.slug}:`, post.date);
+  }
+
   const components = useMDXComponents({});
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Back to Blog Link */}
+        <div className="mb-6">
+          <Link 
+            href="/blog" 
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Blog
+          </Link>
+        </div>
+
         <article className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 md:p-10">
           {/* Post Header */}
           <header className="border-b border-gray-200 pb-6 mb-8">
@@ -62,11 +90,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </h1>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-gray-600">
               <time dateTime={post.date} className="text-lg">
-                {new Date(post.date).toLocaleDateString('en-IN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {formattedDate}
               </time>
               <span className="text-blue-600 font-medium mt-2 sm:mt-0">
                 PaisaTools Blog
@@ -113,24 +137,24 @@ export default async function PostPage({ params }: PostPageProps) {
               Use our free financial calculators to plan your finances better.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <a 
+              <Link 
                 href="/income-tax-calculator" 
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Tax Calculator
-              </a>
-              <a 
+              </Link>
+              <Link 
                 href="/sip-calculator" 
                 className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
                 SIP Calculator
-              </a>
-              <a 
+              </Link>
+              <Link 
                 href="/" 
                 className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 All Calculators
-              </a>
+              </Link>
             </div>
           </div>
         </div>
