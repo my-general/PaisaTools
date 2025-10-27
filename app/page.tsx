@@ -175,7 +175,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         
         {/* Enhanced Hero Section */}
-        <section className="text-center bg-white rounded-2xl shadow-sm p-12 mb-16 
+        {/* <section className="text-center bg-white rounded-2xl shadow-sm p-12 mb-16 
                           border border-gray-100 hover:shadow-md transition-shadow duration-300">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 
@@ -201,7 +201,7 @@ export default function Home() {
               </span>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Enhanced Tools Grid */}
         <section>
