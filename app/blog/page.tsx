@@ -1,3 +1,4 @@
+// app/blog/page.tsx
 import { getSortedPostsData, PostMetadata } from '../utils/posts';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -15,11 +16,20 @@ const BlogCardErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 
 // Enhanced BlogCard with better design and error handling
 const BlogCard = ({ post }: { post: PostMetadata }) => {
-  const formattedDate = new Date(post.date).toLocaleDateString('en-IN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  let formattedDate = 'Invalid Date';
+  
+  try {
+    const date = new Date(post.date);
+    if (!isNaN(date.getTime())) {
+      formattedDate = date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  } catch (error) {
+    console.warn(`Invalid date for post ${post.slug}:`, post.date);
+  }
 
   return (
     <BlogCardErrorBoundary>
@@ -105,7 +115,7 @@ export default async function BlogHome() {
           <div className="max-w-3xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 
                          bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              Paisa Blog
+              PaisaTools Blog
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
               Expert guides on taxes, investments, and financial planning
