@@ -20,6 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head><meta name="google-site-verification" content="DR5wwyw4SOKrjVlMzFjfvYgJAsQbjZOjze3J7VS-4ds" /></head>
       <body className={`${inter.className} bg-gray-100 min-h-screen flex flex-col`}>
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
